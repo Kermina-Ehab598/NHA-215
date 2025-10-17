@@ -5,7 +5,7 @@ import MainNav from "./layouts/MainNav";
 import About from "./pages/About";
 import Home from "./pages/Home";
 import SignIn from "./pages/SignIn";
-import SignUpForm from "./pages/SignUpForm";
+import SignUpForm from "./components/SignUpForm";
 function App() {
   return (
     <>
