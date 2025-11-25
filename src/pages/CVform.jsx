@@ -1,4 +1,7 @@
-import React, { useReducer, useRef, useCallback, useState } from "react";
+import React, { useReducer, useRef, useState, useCallback } from "react";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import Loadingpage from "./Loadingpage";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -95,9 +98,7 @@ export default function CVFormUploader() {
       return;
     }
 
-
     dispatch({ type: "SET_LOADING", loading: true });
-    dispatch({ type: "SET_SERVER_ERROR", error: null });
 
     try {
       const formData = new FormData();
@@ -127,72 +128,136 @@ export default function CVFormUploader() {
     } catch (err) {
       dispatch({
         type: "SET_SERVER_ERROR",
-        error: "Network error. Try again.",
+        error: `Analysis failed: ${err.message}`,
       });
+      dispatch({ type: "SET_LOADING", loading: false });
     }
   };
 
-  /* ----------------- Success UI ----------------- */
-  if (success) {
+  if (analysis) {
+    const {
+      overall = 0,
+      subscores = {},
+      warnings = [],
+      missing_or_weak_sections = [],
+      top_recommendations = [],
+    } = analysis;
+    const scoreColor =
+      overall >= 80 ? "#10b981" : overall >= 60 ? "#f59e0b" : "#ef4444";
+
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-[#020707] to-[#052a2a]">
-        <div className="max-w-3xl w-full bg-[#071014] p-8 rounded-2xl shadow-lg border border-[#123d3d] text-white">
-          <h2 className="text-2xl font-bold text-[#20bec4]">
-            Submission received
-          </h2>
-          <p className="mt-2 text-gray-300">
-            Thanks! We will analyze your CV and send job recommendations
-            shortly.
-          </p>
+      <div className="min-h-screen bg-gradient-to-br from-[#010d0d] to-[#023437] flex items-center justify-center p-6">
+        <div className="max-w-6xl w-full space-y-10">
+          <div className="bg-[#071014] rounded-3xl p-12 border border-[#123d3d] text-center">
+            <h3 className="text-5xl font-bold text-[#20bec4] mb-8">
+              ATS Overall Score
+            </h3>
+            <div className="w-80 h-80 mx-auto">
+              <CircularProgressbar
+                value={overall}
+                text={`${overall}%`}
+                styles={buildStyles({
+                  pathColor: scoreColor,
+                  textColor: "#fff",
+                  trailColor: "#1f2937",
+                  textSize: "18px",
+                })}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {Object.entries(subscores).map(([k, v]) => (
+              <div
+                key={k}
+                className="bg-[#0a1a1a] p-6 rounded-2xl text-center border border-[#123d3d]"
+              >
+                <p className="text-gray-400 capitalize">
+                  {k.replace(/_/g, " ")}
+                </p>
+                <p className="text-4xl font-bold text-white mt-2">{v}%</p>
+              </div>
+            ))}
+          </div>
+
+          {warnings.length > 0 && (
+            <div className="bg-[#071014] rounded-2xl p-8 border border-[#123d3d]">
+              <h3 className="text-2xl font-bold text-[#20bec4] mb-5">
+                Warnings
+              </h3>
+              {warnings.map((w, i) => (
+                <p
+                  key={i}
+                  className="text-yellow-300 flex items-center gap-3 mt-2"
+                >
+                  Warning {w}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {missing_or_weak_sections.length > 0 && (
+            <div className="bg-[#071014] rounded-2xl p-8 border border-[#123d3d]">
+              <h3 className="text-2xl font-bold text-[#20bec4] mb-5">
+                Missing/Weak Sections
+              </h3>
+              {missing_or_weak_sections.map((s, i) => (
+                <p
+                  key={i}
+                  className="text-red-400 flex items-center gap-3 mt-2"
+                >
+                  Cross {s}
+                </p>
+              ))}
+            </div>
+          )}
+
+          {top_recommendations.length > 0 && (
+            <div className="bg-[#071014] rounded-2xl p-8 border border-[#123d3d]">
+              <h3 className="text-2xl font-bold text-[#20bec4] mb-5">
+                Top Recommendations
+              </h3>
+              {top_recommendations.map((r, i) => (
+                <p
+                  key={i}
+                  className="text-green-400 flex items-center gap-3 mt-2"
+                >
+                  Check {r}
+                </p>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={() => dispatch({ type: "SET_ANALYSIS", data: null })}
+            className="w-full py-6 bg-[#0ea6a9] hover:bg-[#0c8f90] text-white text-2xl font-bold rounded-2xl"
+          >
+            Analyze Another CV
+          </button>
         </div>
       </div>
     );
   }
 
-  /* ----------------- Main UI: upload bubble + form ----------------- */
-  return (
-    <div className="flex items-center justify-center p-6 bg-gradient-to-br from-[#010d0d] to-[#023437] text-white">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: big speech-bubble upload */}
-        <div className="relative rounded-2xl bg-gradient-to-b from-[#bfeee9] to-[#c7f3ea] p-8 shadow-2xl border border-[#0c3c3a] flex flex-col items-center">
-          <div className="flex flex-col items-center gap-3">
-            {/* cloud icon */}
-            <svg
-              className="w-16 h-16 text-[#083433]"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M16 16H7a4 4 0 010-8c.62 0 1.2.16 1.7.44A6 6 0 1120 16h-4z"
-                stroke="#083433"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M12 10v4"
-                stroke="#083433"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 13h6"
-                stroke="#083433"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+  if (loading || analyzing) {
+    return (
+      <Loadingpage />
+    );
+  }
 
-            <h2 className="text-2xl font-semibold text-[#083433]">
-              Upload your resume
-            </h2>
-            <p className="text-sm text-[#083433]/90">
-              Drag & drop your CV, or click Import file. Accepted: PDF, DOCX,
-              PPTX.
-            </p>
+  return (
+    <div className="min-h-[calc(100vh-72px)] flex items-center justify-center p-6 bg-gradient-to-br from-[#010d0d] to-[#023437]">
+      <div className="w-full max-w-4xl">
+        <div className="rounded-3xl bg-gradient-to-b from-[#bfeee9] to-[#c7f3ea] p-12 shadow-2xl border border-[#0c3c3a]">
+          <div className="text-center space-y-10">
+            <div>
+              <h2 className="text-5xl font-bold text-[#083433]">
+                Upload Your Resume
+              </h2>
+              <p className="text-xl text-[#083433]/90 mt-4">
+                Drag & drop your file here
+              </p>
+            </div>
 
             <div
               onDrop={onDrop}
