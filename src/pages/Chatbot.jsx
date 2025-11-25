@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import Loadingpage from './Loadingpage'
 
 const Chatbot = () => {
 
@@ -30,7 +31,8 @@ const Chatbot = () => {
     }, [])
 
     const clearChat = () => {
-        window.location.reload();
+        setMessages([]);
+        setMessages((prev) => [...prev, { sender: "bot", text: `Now choose a major.` }]);
     }
 
     const selectSource = async (sourceName) => {
@@ -112,15 +114,7 @@ const Chatbot = () => {
     return (
         <section className='relative min-h-[calc(100vh-72px)] bg-pri p-16 flex items-center flex-col'>
             {loadingP && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#090f0fff] to-[#0c5c5fff] text-white p-4 animate-ultraSmoothFadeIn z-10">
-                <div className="max-w-md mx-auto p-6 bg-[#121212] rounded-lg shadow text-white flex items-center gap-2"> 
-                    <h2 className="text-2xl font-semibold">Loading data...</h2>
-                    <svg className="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.2" />
-                    <path d="M2 12a10 10 0 0110-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                    </svg>
-                </div>
-            </div>
+                <Loadingpage />
             )}
             <div className='w-full h-[625px] bg-[#0e1617] rounded-3xl p-6 gap-5 flex flex-col relative'>
                 <div className='mb-2 flex flex-wrap justify-between'>

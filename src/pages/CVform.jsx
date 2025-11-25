@@ -1,6 +1,7 @@
 import React, { useReducer, useRef, useState, useCallback } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import Loadingpage from "./Loadingpage";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -98,7 +99,6 @@ export default function CVFormUploader() {
     }
 
     dispatch({ type: "SET_LOADING", loading: true });
-    dispatch({ type: "SET_SERVER_ERROR", error: null });
 
     try {
       const formData = new FormData();
@@ -241,28 +241,12 @@ export default function CVFormUploader() {
 
   if (loading || analyzing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#010d0d] to-[#023437] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-40 h-40 mx-auto mb-12">
-            <CircularProgressbar
-              value={analyzing ? 92 : 55}
-              strokeWidth={8}
-              styles={buildStyles({
-                pathColor: "#20bec4",
-                trailColor: "#071014",
-              })}
-            />
-          </div>
-          <h2 className="text-5xl font-bold text-[#20bec4]">
-            {analyzing ? "AI is analyzing..." : "Preparing..."}
-          </h2>
-        </div>
-      </div>
+      <Loadingpage />
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-[#010d0d] to-[#023437]">
+    <div className="min-h-[calc(100vh-72px)] flex items-center justify-center p-6 bg-gradient-to-br from-[#010d0d] to-[#023437]">
       <div className="w-full max-w-4xl">
         <div className="rounded-3xl bg-gradient-to-b from-[#bfeee9] to-[#c7f3ea] p-12 shadow-2xl border border-[#0c3c3a]">
           <div className="text-center space-y-10">
